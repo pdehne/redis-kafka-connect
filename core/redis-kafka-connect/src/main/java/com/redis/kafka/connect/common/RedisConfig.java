@@ -73,7 +73,14 @@ public abstract class RedisConfig extends AbstractConfig {
     private RedisURI.Builder redisURIBuilder() {
         String uri = getString(RedisConfigDef.URI_CONFIG);
         if (StringUtils.hasLength(uri)) {
-            return RedisURI.builder(RedisURI.create(uri));
+            RedisURI redisURI = RedisURI.create(uri);
+            RedisURI.Builder builder = RedisURI.builder(redisURI);
+            for (RedisURI sentinel : redisURI.getSentinels()) {
+                builder.withSentinel(sentinel.getHost(), sentinel.getPort());
+            }
+            if(redisURI.getSentinelMasterId() != null)
+                builder.withSentinelMasterId(redisURI.getSentinelMasterId());
+            return builder;
         }
         String host = getString(RedisConfigDef.HOST_CONFIG);
         int port = getInt(RedisConfigDef.PORT_CONFIG);
